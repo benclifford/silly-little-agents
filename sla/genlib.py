@@ -10,6 +10,8 @@ from academy.exchange import HttpExchangeFactory
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import globus_compute_sdk as gce
 
+from sla.logagent import LogAgent
+
 async def async_generator_to_agent(g, m):
   """Turn a generator into an agent, so that we can then pass
      its handle around as a return result, and do RPCs for iteration.
@@ -34,7 +36,7 @@ async def async_generator_to_agent(g, m):
   print(f"GeneratorAgent launched, about to return handle {agh}")
   return agh
 
-class GeneratorAgent(Agent):
+class GeneratorAgent(LogAgent):
   def __init__(self, g):
     print(f"initialising generator agent {self!r} on {os.getpid()}")
     self.g = g
@@ -69,7 +71,7 @@ import asyncio
 import os
 
 
-class FibonacciAgent(Agent):
+class FibonacciAgent(LogAgent):
 
 
   async def agent_on_startup(self):

@@ -60,6 +60,13 @@ async def main():
     # but maybe a Handle should be able to do that with an RPC?
     async for n in iteratorh:
       print(n)
+
+    final_iterator_agent_logs = iteratorh.get_interesting_logs()
+    final_main_agent_logs = ah.get_interesting_logs()
+
+    print(final_iterator_agent_logs)
+    print(final_main_agent_logs)
+
   print("end")
 
 if __name__ == "__main__":
