@@ -2,7 +2,7 @@
 
 ### ==== pretend this bit is in the academy standard library ==== ###
 
-from genlib import *
+from sla.genlib import *
 
 import asyncio
 from academy.agent import Agent, action
