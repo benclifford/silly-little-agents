@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=64.0", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "silly-little-agents"
+version = "0"
+
+[tool.setuptools.packages.find]
+include = ["sla"]
+
