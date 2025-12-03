@@ -40,7 +40,7 @@ async def main():
 
     await iteratorh.ping()
 
-    iteratorh = IteratorShim(iteratorh)
+    iterator_shim = IteratorShim(iteratorh)
 
     await asyncio.sleep(5)
     print(f"slept, now will iterate...")
@@ -58,14 +58,14 @@ async def main():
     # (because all the actions are generated on demand, and this doesn't
     # demand them hard enough...)
     # but maybe a Handle should be able to do that with an RPC?
-    async for n in iteratorh:
+    async for n in iterator_shim:
       print(n)
 
     final_iterator_agent_logs = iteratorh.get_interesting_logs()
     final_main_agent_logs = ah.get_interesting_logs()
 
-    print(final_iterator_agent_logs)
-    print(final_main_agent_logs)
+  print(final_iterator_agent_logs)
+  print(final_main_agent_logs)
 
   print("end")
 
