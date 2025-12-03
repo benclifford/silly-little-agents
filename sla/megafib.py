@@ -4,6 +4,7 @@
 
 from sla.genlib import *
 
+import logging
 import asyncio
 from academy.agent import Agent, action
 from academy.manager import Manager
@@ -27,12 +28,12 @@ async def main():
   import sys
   endpoint = sys.argv[1]
 
-  print(f"will use GC endpoitn {endpoint}")
+  print(f"will use GC endpoint {endpoint}")
 
   async with await Manager.from_exchange_factory(factory=HttpExchangeFactory(auth_method='globus', url="https://exchange.academy-agents.org"), executors=gce.Executor(endpoint_id=endpoint)) as m:
     print(f"got manager {m!r}")
     a = FibonacciAgent()
-    ah = await m.launch(a)
+    ah = await m.launch(a, init_logging=True, logfile="/tmp/megafib.log", loglevel=logging.DEBUG)
 
     iteratorh = await ah.calc_fibs(0, 1)
     print(f"got iterator handle {iteratorh}")
