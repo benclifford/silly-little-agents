@@ -111,7 +111,12 @@ async def fibs_generator(init_a, init_b):
 async def main():
   print(f"start, main process is pid {os.getpid()}")
 
-  async with await Manager.from_exchange_factory(factory=HttpExchangeFactory(auth_method='globus', url="https://exchange.academy-agents.org"), executors=gce.Executor(endpoint_id='d23b9bc6-99d1-40c4-8c35-9effd8a2266c')) as m:
+  import sys
+  endpoint = sys.argv[1]
+
+  print(f"will use GC endpoitn {endpoint}")
+
+  async with await Manager.from_exchange_factory(factory=HttpExchangeFactory(auth_method='globus', url="https://exchange.academy-agents.org"), executors=gce.Executor(endpoint_id=endpoint)) as m:
     print(f"got manager {m!r}")
     a = FibonacciAgent()
     ah = await m.launch(a)
