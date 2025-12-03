@@ -38,6 +38,7 @@ async def async_generator_to_agent(g, m):
 
 class GeneratorAgent(LogAgent):
   def __init__(self, g):
+    super().__init__()
     print(f"initialising generator agent {self!r} on {os.getpid()}")
     self.g = g
 
@@ -75,7 +76,7 @@ class FibonacciAgent(LogAgent):
 
 
   async def agent_on_startup(self):
-
+    await super().agent_on_startup()
     import asyncio
     from academy.agent import Agent, action
     from academy.manager import Manager

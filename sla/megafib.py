@@ -25,12 +25,17 @@ if __name__ == "__main__":
 async def main():
   print(f"start, main process is pid {os.getpid()}")
 
+
   import sys
-  endpoint = sys.argv[1]
+  if len(sys.argv) == 2:
+    endpoint = sys.argv[1]
 
-  print(f"will use GC endpoint {endpoint}")
+    print(f"will use GC endpoint {endpoint}")
+    manager = Manager.from_exchange_factory(factory=HttpExchangeFactory(auth_method='globus', url="https://exchange.academy-agents.org"), executors=gce.Executor(endpoint_id=endpoint))
+  else:
+    manager = Manager.from_exchange_factory(factory=HttpExchangeFactory(auth_method='globus', url="https://exchange.academy-agents.org"), executors=ThreadPoolExecutor)
 
-  async with await Manager.from_exchange_factory(factory=HttpExchangeFactory(auth_method='globus', url="https://exchange.academy-agents.org"), executors=gce.Executor(endpoint_id=endpoint)) as m:
+  async with await manager as m:
     print(f"got manager {m!r}")
     a = FibonacciAgent()
     ah = await m.launch(a, init_logging=True, logfile="/tmp/megafib.log", loglevel=logging.DEBUG)
@@ -61,8 +66,8 @@ async def main():
     async for n in iterator_shim:
       print(n)
 
-    final_iterator_agent_logs = iteratorh.get_interesting_logs()
-    final_main_agent_logs = ah.get_interesting_logs()
+    final_iterator_agent_logs = await iteratorh.get_interesting_logs()
+    final_main_agent_logs = await ah.get_interesting_logs()
 
   print(final_iterator_agent_logs)
   print(final_main_agent_logs)
