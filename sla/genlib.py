@@ -10,13 +10,17 @@ from academy.exchange import HttpExchangeFactory
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import globus_compute_sdk as gce
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 from sla.logagent import LogAgent
 
 async def async_generator_to_agent(g, m):
   """Turn a generator into an agent, so that we can then pass
      its handle around as a return result, and do RPCs for iteration.
   """
-  print(f"On pid {os.getpid()}, converting generator to agent")
+  logger.info(f"On pid {os.getpid()}, converting generator to agent")
   # m = await Manager.from_exchange_factory(factory=HttpExchangeFactory(auth_method='globus', url="https://exchange.academy-agents.org"), executors=gce.Executor(endpoint_id='d23b9bc6-99d1-40c4-8c35-9effd8a2266c'))
   # this is explicitly not a with-block ^^^ because I want to launch a new
   # ambient agent and return the result without shutting down the infra.
@@ -33,18 +37,18 @@ async def async_generator_to_agent(g, m):
   agh = await m.launch(ag)
   # this m manager is now leaking across the
   # boundary of what I imagined to be academy vs user land.
-  print(f"GeneratorAgent launched, about to return handle {agh}")
+  logger.info(f"GeneratorAgent launched, about to return handle {agh}", extra={"agent_handle": agh})
   return agh
 
 class GeneratorAgent(LogAgent):
   def __init__(self, g):
     super().__init__()
-    print(f"initialising generator agent {self!r} on {os.getpid()}")
+    logger.info(f"initialising generator agent {self!r} on {os.getpid()}")
     self.g = g
 
   @action
   async def __anext__(self):
-    print(f"in agent-side anext on pid {os.getpid()}")
+    logger.info(f"in agent-side anext on pid {os.getpid()}")
     # i think this stuff is hanging because the agent process from
     # the above manager never terminates. I'm not sure what the right
     # pattern for that should be.
@@ -100,6 +104,7 @@ async def fibs_generator(init_a, init_b):
   a = init_a
   b = init_b
   while b < 1000:
+    logger.info(f"generator state: a={a}, next to yield: b={b}", extra={"fib.a": a, "fib.b": b})
     yield f"b={b} computed on pid {os.getpid()}"
     t = a+b
     a = b
