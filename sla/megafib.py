@@ -37,7 +37,7 @@ async def main(lc):
     logger.info(f"will use GC endpoint {endpoint}")
     manager = Manager.from_exchange_factory(factory=HttpExchangeFactory(auth_method='globus', url="https://exchange.academy-agents.org"), executors=gce.Executor(endpoint_id=endpoint))
   else:
-    manager = Manager.from_exchange_factory(factory=HttpExchangeFactory(auth_method='globus', url="https://exchange.academy-agents.org"), executors=ThreadPoolExecutor)
+    manager = Manager.from_exchange_factory(factory=HttpExchangeFactory(auth_method='globus', url="https://exchange.academy-agents.org"), executors=ThreadPoolExecutor())
 
   async with await manager as m:
     logger.info(f"got manager {m!r}")
