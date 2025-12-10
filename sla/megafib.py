@@ -14,41 +14,45 @@ import globus_compute_sdk as gce
 
 ### ==== pretend this bit is your user code ==== ###
 
+
+logger = logging.getLogger(__name__)
+
 import asyncio
 import os
 
 
 if __name__ == "__main__":
-    from academy.logging import init_logging
-    init_logging(level='DEBUG', extra=True+1, logfile="fibiterate.log", logfile_level='DEBUG')
+    from academy.logging import recommended_dev_log_config
+    lc = recommended_dev_log_config()
+    lc.init_logging()
 
-async def main():
-  print(f"start, main process is pid {os.getpid()}")
+async def main(lc):
+  logger.info(f"start, main process is pid {os.getpid()}")
 
 
   import sys
   if len(sys.argv) == 2:
     endpoint = sys.argv[1]
 
-    print(f"will use GC endpoint {endpoint}")
+    logger.info(f"will use GC endpoint {endpoint}")
     manager = Manager.from_exchange_factory(factory=HttpExchangeFactory(auth_method='globus', url="https://exchange.academy-agents.org"), executors=gce.Executor(endpoint_id=endpoint))
   else:
     manager = Manager.from_exchange_factory(factory=HttpExchangeFactory(auth_method='globus', url="https://exchange.academy-agents.org"), executors=ThreadPoolExecutor)
 
   async with await manager as m:
-    print(f"got manager {m!r}")
+    logger.info(f"got manager {m!r}")
     a = FibonacciAgent()
-    ah = await m.launch(a, init_logging=True, logfile="/tmp/megafib.log", loglevel=logging.DEBUG)
+    ah = await m.launch(a, log_config=lc)
 
     iteratorh = await ah.calc_fibs(0, 1)
-    print(f"got iterator handle {iteratorh}")
+    logger.info(f"got iterator handle {iteratorh}")
 
     await iteratorh.ping()
 
     iterator_shim = IteratorShim(iteratorh)
 
     await asyncio.sleep(5)
-    print(f"slept, now will iterate...")
+    logger.info(f"slept, now will iterate...")
 
     # the error handling/logging around iteratorh not having a
     # the right async iterator __aiter__ is quite chaotic and
@@ -64,7 +68,7 @@ async def main():
     # demand them hard enough...)
     # but maybe a Handle should be able to do that with an RPC?
     async for n in iterator_shim:
-      print(n)
+      logger.info(n)
 
     final_iterator_agent_logs = await iteratorh.get_interesting_logs()
     final_main_agent_logs = await ah.get_interesting_logs()
@@ -72,7 +76,7 @@ async def main():
   print(final_iterator_agent_logs)
   print(final_main_agent_logs)
 
-  print("end")
+  logger.info("end")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main(lc))
