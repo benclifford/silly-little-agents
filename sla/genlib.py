@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 from sla.logagent import LogAgent
 
-async def async_generator_to_agent(g, m):
+async def async_generator_to_agent(g, parent_agent):
   """Turn a generator into an agent, so that we can then pass
      its handle around as a return result, and do RPCs for iteration.
   """
@@ -34,7 +34,7 @@ async def async_generator_to_agent(g, m):
   # run the FibonacciAgent...
 
   ag = GeneratorAgent(g)
-  agh = await m.launch(ag)
+  agh = await parent_agent.agent_launch_alongside(ag)
   # this m manager is now leaking across the
   # boundary of what I imagined to be academy vs user land.
   logger.info(f"GeneratorAgent launched, about to return handle {agh}", extra={"agent_handle": agh})
@@ -78,27 +78,9 @@ import os
 
 class FibonacciAgent(LogAgent):
 
-
-  async def agent_on_startup(self):
-    await super().agent_on_startup()
-    import asyncio
-    from academy.agent import Agent, action
-    from academy.manager import Manager
-    from academy.exchange import HttpExchangeFactory
-    from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-    import globus_compute_sdk as gce
-    self.manager = Manager(
-      self.agent_exchange_client,
-      ThreadPoolExecutor()
-    )
-
-  async def agent_on_shutdown(self):
-    await self.manager.close(close_exchange=False)
-    return await super().agent_on_shutdown()
-
   @action
   async def calc_fibs(self, init_a, init_b):
-     return await async_generator_to_agent(fibs_generator(init_a, init_b), self.manager)
+     return await async_generator_to_agent(fibs_generator(init_a, init_b), self)
 
 async def fibs_generator(init_a, init_b):
   a = init_a
