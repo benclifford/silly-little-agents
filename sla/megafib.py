@@ -36,8 +36,14 @@ async def main(lc):
 
     logger.info(f"will use GC endpoint {endpoint}")
     manager = Manager.from_exchange_factory(factory=HttpExchangeFactory(auth_method='globus', url="https://exchange.academy-agents.org"), executors=gce.Executor(endpoint_id=endpoint))
-  else:  # single process mode
+  elif len(sys.argv) == 3 and sys.argv[2] == "host":
+    se = spawn_http_exchange(log_config=lc)
+    hef = se.__enter__()  # how to structure using `with` ?
+    manager = Manager.from_exchange_factory(factory=hef, executors=ProcessPoolExecutor())
+  elif len(sys.argv) == 3 and sys.argv[2] == "process":
     manager = Manager.from_exchange_factory(factory=LocalExchangeFactory(), executors=ThreadPoolExecutor())
+  else:
+    raise RuntimeError("bad commandline parameters")
 
   async with await manager as m:
     logger.info(f"got manager {m!r}")
